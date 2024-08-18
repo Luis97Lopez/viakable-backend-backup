@@ -18,7 +18,7 @@ async def create_first_super_user(db: SessionLocal) -> bool:
 
     try:
         super_user = FirstSuperUserCreate(**data)
-        user = await UserLogic.get_by_email_or_phone(db, super_user.email, super_user.phone)
+        user = await UserLogic.get_super_user(db)
         if not user:
             await UserLogic.create(db, data_in=super_user)
     except Exception as e:

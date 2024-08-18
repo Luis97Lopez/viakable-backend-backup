@@ -36,5 +36,8 @@ class UserCRUD(CRUD):
         data = await self.get_by_id(db, row_id)
         return data.password
 
+    async def get_super_user(self, db: Session):
+        return await self.parse(db.query(self.db_model).filter(models.User.isSuperUser == True).first())
+
 
 UserLogic = UserCRUD(db_model=models.User, model=User, filter_model=schemas.user.UserFilter)

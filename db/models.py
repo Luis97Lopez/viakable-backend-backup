@@ -33,10 +33,10 @@ class User(Base, BaseMixin):
         back_populates="users"
     )
 
-    roles_user: Mapped[list['RoleByUser']] = relationship(
-        lazy='noload',
-        back_populates="user"
-    )
+    # roles_user: Mapped[list['RoleByUser']] = relationship(
+    #     lazy='noload',
+    #     back_populates="user"
+    # )
 
 
 class Role(Base):
@@ -50,10 +50,10 @@ class Role(Base):
         back_populates="roles"
     )
 
-    users_role: Mapped[list['RoleByUser']] = relationship(
-        lazy='noload',
-        back_populates='role'
-    )
+    # users_role: Mapped[list['RoleByUser']] = relationship(
+    #     lazy='noload',
+    #     back_populates='role'
+    # )
 
 
 class RoleByUser(Base):
@@ -64,40 +64,41 @@ class RoleByUser(Base):
     id_role: Mapped[int] = mapped_column(ForeignKey('roles.id'))
     id_user: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
-    role: Mapped[Role] = relationship(back_populates='users_role')
-    user: Mapped[User] = relationship(back_populates='roles_user')
+    # role: Mapped[Role] = relationship(back_populates='users_role')
+    # user: Mapped[User] = relationship(back_populates='roles_user')
 
-    operator: Mapped['Operator'] = relationship(lazy='noload', back_populates="role_user")
-    forklift: Mapped['Forklift'] = relationship(lazy='noload', back_populates="role_user")
-
-
-class Operator(Base):
-    __tablename__ = 'operators'
-
-    id: Mapped[int] = mapped_column(ForeignKey('role_by_user.id'), primary_key=True, autoincrement=False)
-    machine: Mapped[str] = mapped_column(String())
-    area: Mapped[str] = mapped_column(String())
-
-    role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="operator")
+    # operator: Mapped['Operator'] = relationship(lazy='noload', back_populates="role_user")
+    # forklift: Mapped['Forklift'] = relationship(lazy='noload', back_populates="role_user")
+    # admin: Mapped['Admin'] = relationship(lazy='noload', back_populates="role_user")
 
 
-class Forklift(Base):
-    __tablename__ = 'forklifts'
-
-    id: Mapped[int] = mapped_column(ForeignKey('role_by_user.id'), primary_key=True, autoincrement=False)
-    name: Mapped[str] = mapped_column(String())
-
-    role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="forklift")
-
-
-class Admin(Base):
-    __tablename__ = 'forklifts'
-
-    id: Mapped[int] = mapped_column(ForeignKey('role_by_user.id'), primary_key=True, autoincrement=False)
-    firstName: Mapped[str] = mapped_column(String())
-    lastName: Mapped[str] = mapped_column(String())
-
-    role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="forklift")
+# class Operator(Base):
+#     __tablename__ = 'operators'
+#
+#     id: Mapped[int] = mapped_column(ForeignKey('role_by_user.id'), primary_key=True, autoincrement=False)
+#     machine: Mapped[str] = mapped_column(String())
+#     area: Mapped[str] = mapped_column(String())
+#
+#     role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="operator")
+#
+#
+# class Forklift(Base):
+#     __tablename__ = 'forklifts'
+#
+#     id: Mapped[int] = mapped_column(ForeignKey('role_by_user.id'), primary_key=True, autoincrement=False)
+#     name: Mapped[str] = mapped_column(String())
+#
+#     role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="forklift")
+#
+#
+# class Admin(Base):
+#     __tablename__ = 'admins'
+#
+#     id: Mapped[int] = mapped_column(ForeignKey('role_by_user.id'), primary_key=True, autoincrement=False)
+#     firstName: Mapped[str] = mapped_column(String())
+#     lastName: Mapped[str] = mapped_column(String())
+#
+#     role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="admins")
 
 
 class Material(Base):

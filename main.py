@@ -7,6 +7,7 @@ from utils.config import get_settings
 from utils.logs import initialize_logs_service, get_logger
 from db.init_db import init_db
 from contextlib import asynccontextmanager
+import asyncio
 
 from api import routes
 
@@ -62,9 +63,13 @@ def home():
 
 
 if __name__ == '__main__':
-    host = settings.app.host
-    port = settings.app.port
-    env = settings.app.environment
+    host = settings.deploy.host
+    port = settings.deploy.port
+    env = settings.deploy.environment
+
+    # Trying to initialize DB
+    if not asyncio.run(init_db()):
+        raise RuntimeError("Could not initialize DB")
 
     if env == 'dev':
         uvicorn.run("main:app", host=host, port=port, reload=True)

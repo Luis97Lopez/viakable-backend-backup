@@ -48,7 +48,7 @@ class UserFilter(Filter):
     username: str | None = None
     username__like: str | None = None
 
-    order_by: list[str] = ['username', 'lastName']
+    order_by: list[str] = ['username']
     search: str | None = None
 
     class Constants(Filter.Constants):
