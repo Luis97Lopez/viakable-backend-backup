@@ -118,6 +118,7 @@ class Order(Base):
     estimate_datetime: Mapped[datetime] = mapped_column(DateTime())
     order_datetime: Mapped[Optional[datetime]] = mapped_column(DateTime(), nullable=True)
     state: Mapped[str] = mapped_column(String(60))
+    canceled: Mapped[bool] = mapped_column(default=False)
 
     materials: Mapped[list['Material']] = relationship(
         secondary="material_by_order",
@@ -156,7 +157,8 @@ class Material(Base):
     )
 
     materials_order: Mapped[list['MaterialByOrder']] = relationship(
-        back_populates="material"
+        back_populates="material",
+        lazy="noload"
     )
 
 

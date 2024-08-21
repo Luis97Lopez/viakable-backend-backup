@@ -6,3 +6,4 @@ from . import forklift
 from . import operator
 from . import token
 from . import user
+from . import order

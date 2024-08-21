@@ -15,8 +15,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 logger = get_logger(__name__)
 
 
-def has_role(role, roles): return (role == getattr(r, "id", "unknown") for r in roles)
-
+def has_role(role, roles):
+    for r in roles:
+        if role == getattr(r, "id", "unknown"):
+            return True
+    return False
 
 async def get_current_user(
         token: str = Depends(oauth2_scheme),
@@ -62,14 +65,13 @@ async def is_teacher_user(current_active_user: User = Depends(get_active_current
     return True
 
 
-async def is_admin_user(current_active_user: User = Depends(get_active_current_user)):
-    # TODO: roles
-    if not (True or current_active_user.role == UserRoles.ADMIN):
+async def is_operator_user(current_active_user: User = Depends(get_active_current_user)):
+    if not has_role(UserRoles.OPERATOR, current_active_user.roles):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User")
     return True
 
 
 async def is_super_user_or_is_admin(current_active_user: User = Depends(get_active_current_user)):
-    if not (current_active_user.isSuperUser or has_role(UserRoles, current_active_user.roles)):
+    if not (current_active_user.isSuperUser or has_role(UserRoles.ADMIN, current_active_user.roles)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User")
     return True
