@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi_filter import FilterDepends
 
 from logic.material import MaterialLogic
-from api.dependencies import is_super_user_or_is_admin
+from api.dependencies import is_super_user_or_is_admin, get_active_current_user
 from utils.logs import get_logger
 import schemas
 from utils.config import get_settings
@@ -19,7 +19,7 @@ settings = get_settings()
 
 router = APIRouter(
     prefix='/materials',
-    tags=['materials']
+    tags=['crud materials', 'platform']
 )
 
 server_error_exception = HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -27,7 +27,7 @@ server_error_exception = HTTPException(status_code=status.HTTP_500_INTERNAL_SERV
 
 
 @router.get("", response_model=Paginated[list[schemas.material.PublicMaterial]],
-            dependencies=[Depends(is_super_user_or_is_admin)])
+            dependencies=[Depends(get_active_current_user)], tags=['mobile'])
 async def read_materials(material_filter: schemas.material.MaterialFilter =
                          FilterDepends(schemas.material.MaterialFilter),
                          page: int = 1, skip: int = 0, size: int = 100, db: Session = Depends(get_db)):
@@ -43,7 +43,7 @@ async def read_materials(material_filter: schemas.material.MaterialFilter =
 
 
 @router.get("/{target_material_id}", response_model=schemas.material.PublicMaterial,
-            dependencies=[Depends(is_super_user_or_is_admin)])
+            dependencies=[Depends(get_active_current_user)], tags=['mobile'])
 async def read_material(target_material_id: int, db: Session = Depends(get_db)):
     db_material = await MaterialLogic.get_by_id(db, row_id=target_material_id)
     if not db_material:

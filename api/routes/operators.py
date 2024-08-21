@@ -4,7 +4,7 @@ from fastapi_filter import FilterDepends
 from logic import OperatorLogic
 from db.dependencies import get_db
 from sqlalchemy.orm import Session
-from api.dependencies import is_super_user_or_is_admin
+from api.dependencies import is_super_user_or_is_admin, get_active_current_user
 from utils.logs import get_logger
 import schemas
 from utils.config import get_settings
@@ -27,7 +27,7 @@ router = APIRouter(
 
 
 @router.get("", response_model=Paginated[list[schemas.operator.PublicOperator]],
-            dependencies=[Depends(is_super_user_or_is_admin)])
+            dependencies=[Depends(get_active_current_user)], tags=['mobile'])
 async def read_operators(
         operator_filter: schemas.operator.OperatorFilter = FilterDepends(schemas.operator.OperatorFilter),
         page: int = 1, skip: int = 0, size: int = 100, db: Session = Depends(get_db)):
@@ -43,7 +43,7 @@ async def read_operators(
 
 
 @router.get("/{target_operator_id}", response_model=schemas.operator.PublicOperator,
-            dependencies=[Depends(is_super_user_or_is_admin)])
+            dependencies=[Depends(get_active_current_user)], tags=['mobile'])
 async def read_operator(target_operator_id: int, db: Session = Depends(get_db)):
     db_operator = await OperatorLogic.get_by_id(db, row_id=target_operator_id)
     if not db_operator:

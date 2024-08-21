@@ -4,7 +4,7 @@ from fastapi_filter import FilterDepends
 from logic import ForkliftLogic
 from db.dependencies import get_db
 from sqlalchemy.orm import Session
-from api.dependencies import is_super_user_or_is_admin
+from api.dependencies import is_super_user_or_is_admin, get_active_current_user
 from utils.logs import get_logger
 import schemas
 from utils.config import get_settings
@@ -27,7 +27,7 @@ router = APIRouter(
 
 
 @router.get("", response_model=Paginated[list[schemas.forklift.PublicForklift]],
-            dependencies=[Depends(is_super_user_or_is_admin)])
+            dependencies=[Depends(get_active_current_user)], tags=['mobile'])
 async def read_forklifts(
         forklift_filter: schemas.forklift.ForkliftFilter = FilterDepends(schemas.forklift.ForkliftFilter),
         page: int = 1, skip: int = 0, size: int = 100, db: Session = Depends(get_db)):
@@ -43,7 +43,7 @@ async def read_forklifts(
 
 
 @router.get("/{target_forklift_id}", response_model=schemas.forklift.PublicForklift,
-            dependencies=[Depends(is_super_user_or_is_admin)])
+            dependencies=[Depends(get_active_current_user)], tags=['mobile'])
 async def read_forklift(target_forklift_id: int, db: Session = Depends(get_db)):
     db_forklift = await ForkliftLogic.get_by_id(db, row_id=target_forklift_id)
     if not db_forklift:
