@@ -14,7 +14,6 @@ COPY requirements.txt ./
 RUN pip install -U -r requirements.txt
 
 COPY main.py ./
-COPY .env.production ./.env
 COPY logging.conf ./
 COPY alembic.ini ./
 
@@ -23,7 +22,7 @@ COPY db ./db/
 COPY migrations ./migrations/
 COPY logic ./logic/
 COPY schemas ./schemas/
-COPY services ./services/
+COPY utils ./utils/
 
 RUN mkdir logs
 

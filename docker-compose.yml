@@ -1,6 +1,6 @@
 services:
   api:
-    build: .
+    image: viakable-backend:latest
     ports:
       - "7000:7000"
     depends_on:

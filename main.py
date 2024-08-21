@@ -8,6 +8,7 @@ from utils.logs import initialize_logs_service, get_logger
 from db.init_db import init_db
 from contextlib import asynccontextmanager
 import asyncio
+from fastapi.openapi.utils import get_openapi
 
 from api import routes, middlewares
 
@@ -54,6 +55,21 @@ app.include_router(routes.admins.router)
 app.include_router(routes.forklifts.router)
 app.include_router(routes.materials.router)
 app.include_router(routes.orders.router)
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Viakable Backend",
+        version="0.1.0",
+        routes=app.routes,
+    )
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 
 @app.get('/')
