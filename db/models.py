@@ -82,7 +82,7 @@ class Operator(Base):
     machine: Mapped[str] = mapped_column(String())
     area: Mapped[str] = mapped_column(String())
 
-    role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="operator")
+    role_user: Mapped[RoleByUser] = relationship(lazy='joined', back_populates="operator")
 
 
 class Forklift(Base):
@@ -92,7 +92,7 @@ class Forklift(Base):
                                     autoincrement=False)
     name: Mapped[str] = mapped_column(String())
 
-    role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="forklift")
+    role_user: Mapped[RoleByUser] = relationship(lazy='joined', back_populates="forklift")
 
 
 class Admin(Base):

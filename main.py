@@ -49,7 +49,7 @@ if settings.cors.allow:
 # Consumer route added
 app.include_router(routes.auth.router)
 app.include_router(routes.users.router)
-# app.include_router(routes.teachers.router)
+app.include_router(routes.operators.router)
 app.include_router(routes.admins.router)
 # app.include_router(routes.schedules.router)
 # app.include_router(routes.classes.router)
