@@ -1,8 +1,7 @@
-from enum import IntEnum
+from enum import Enum
 
 
-class UserRoles(IntEnum):
-    SUSPENDED = -1
-    DEFAULT = 0
-    TEACHER = 1
-    ADMIN = 2
+class UserRoles(str, Enum):
+    FORKLIFT = "montacarga"
+    OPERATOR = "operador"
+    ADMIN = "admin"
