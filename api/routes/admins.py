@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi_filter import FilterDepends
 
-from logic.user import UserLogic
+from logic import UserLogic, AdminLogic
 from db.dependencies import get_db
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -11,6 +11,7 @@ import schemas
 from utils.config import get_settings
 from schemas.paginated import Paginated
 from utils.enums import UserRoles
+from api.routes.users import read_user, create_user
 
 
 settings = get_settings()
@@ -23,54 +24,32 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=Paginated[list[schemas.user.PublicUser]],
+@router.get("", response_model=Paginated[list[schemas.admin.PublicAdmin]],
             dependencies=[Depends(is_super_user)])
-async def read_admins(admin_filter: schemas.user.UserFilter = FilterDepends(schemas.user.UserFilter),
+async def read_admins(admin_filter: schemas.admin.AdminFilter = FilterDepends(schemas.admin.AdminFilter),
                       page: int = 1, skip: int = 0, size: int = 100, db: Session = Depends(get_db)):
-    admin_filter.role = UserRoles.ADMIN
-    total = await UserLogic.get_number_users_by_role(db, UserRoles.ADMIN)
+    total = await AdminLogic.get_rows_count(db)
     size = min(size, settings.app.maximum_page_size)
     absolute_skip = (max(page, 1) - 1) * size + skip
-    return Paginated[list[schemas.user.User]](
-        data=await UserLogic.filter_by_query_partial(db, query=admin_filter, skip=absolute_skip, limit=size),
+    return Paginated[list[schemas.admin.Admin]](
+        data=await AdminLogic.filter_by_query_partial(db, query=admin_filter, skip=absolute_skip, limit=size),
         total=total,
         page=page,
         size=size
     )
 
 
-@router.get("/{target_user_id}", response_model=schemas.user.PublicUser, dependencies=[Depends(is_super_user)])
-async def read_admin(target_user_id: UUID, db: Session = Depends(get_db)):
-    db_user = await UserLogic.get_by_id(db, row_id=target_user_id)
-    if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
-    return db_user
+@router.get("/{target_admin_id}", response_model=schemas.admin.PublicAdmin, dependencies=[Depends(is_super_user)])
+async def read_admin(target_admin_id: int, db: Session = Depends(get_db)):
+    db_admin = await AdminLogic.get_by_id(db, row_id=target_admin_id)
+    if not db_admin:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Admin does not exist")
+    return db_admin
 
 
-@router.post("", response_model=schemas.user.PublicUser, dependencies=[Depends(is_super_user)])
-async def activate_admin(data_in: schemas.roles.ActivateOrDeactivateRole,
-                         db: Session = Depends(get_db)):
-    target_user_id = data_in.userId
-    partial_user = {
-        "role": UserRoles.ADMIN
-    }
-    user = await UserLogic.update(db=db, row_id=target_user_id, data_changes=partial_user)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return user
-
-
-@router.delete("/{target_user_id}", response_model=schemas.user.PublicUser,
-               dependencies=[Depends(is_super_user)])
-async def deactivate_admin(target_user_id: UUID, db: Session = Depends(get_db)):
-    partial_user = {
-        "role": UserRoles.DEFAULT
-    }
-    user: schemas.user.User = await UserLogic.get_by_id(db, target_user_id)
-    if user.isSuperUser:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Can't deactivate this admin")
-
-    user = await UserLogic.update(db=db, row_id=target_user_id, data_changes=partial_user)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return user
+@router.post("", response_model=schemas.admin.PublicAdmin, dependencies=[Depends(is_super_user)])
+async def create_admin(data_in: schemas.admin.AdminCreate, db: Session = Depends(get_db)):
+    user = await create_user(data_in, db)
+    target_admin_id = user.id
+    admin = await AdminLogic.create(db, {**data_in.model_dump(), "user_id": target_admin_id})
+    return admin

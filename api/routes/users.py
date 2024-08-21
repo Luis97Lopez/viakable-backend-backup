@@ -58,24 +58,9 @@ async def update_password_me(passwords: schemas.user.ChangePasswordUser,
 # ------------------------
 
 
-@router.get("", response_model=Paginated[list[schemas.user.PublicUser]],
-            dependencies=[Depends(is_super_user_or_is_admin)])
-async def read_users(user_filter: schemas.user.UserFilter = FilterDepends(schemas.user.UserFilter),
-                     page: int = 1, skip: int = 0, size: int = 100, db: Session = Depends(get_db)):
-    total = await UserLogic.get_rows_count(db)
-    size = min(size, settings.app.maximum_page_size)
-    absolute_skip = (max(page, 1) - 1) * size + skip
-    return Paginated[list[schemas.user.User]](
-        data=await UserLogic.filter_by_query_partial(db, query=user_filter, skip=absolute_skip, limit=size),
-        total=total,
-        page=page,
-        size=size
-    )
-
-
 @router.get("/{target_user_id}", response_model=schemas.user.PublicUser,
-            dependencies=[Depends(is_super_user_or_is_admin)])
-async def read_user(target_user_id: UUID, db: Session = Depends(get_db)):
+            dependencies=[Depends(is_super_user_or_is_admin)], include_in_schema=False)
+async def read_user(target_user_id: int, db: Session = Depends(get_db)):
     db_user = await UserLogic.get_by_id(db, row_id=target_user_id)
     if not db_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
@@ -83,7 +68,7 @@ async def read_user(target_user_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=schemas.user.PublicUser,
-             dependencies=[Depends(is_super_user_or_is_admin)])
+             dependencies=[Depends(is_super_user_or_is_admin)], include_in_schema=False)
 async def create_user(user_data: schemas.user.UserCreate,
                       db: Session = Depends(get_db)):
     logger.debug(f"Creating a user {user_data.username}")
@@ -97,7 +82,7 @@ async def create_user(user_data: schemas.user.UserCreate,
 
 
 @router.patch("/{target_user_id}", response_model=schemas.user.PublicUser,
-              dependencies=[Depends(is_super_user_or_is_admin)])
+              dependencies=[Depends(is_super_user_or_is_admin)], include_in_schema=False)
 async def update_user(target_user_id: UUID, partial_user: schemas.user.ModifyUserByAdmin,
                       db: Session = Depends(get_db)):
     user = await UserLogic.get_by_id(db, target_user_id)
@@ -115,7 +100,7 @@ async def update_user(target_user_id: UUID, partial_user: schemas.user.ModifyUse
 
 
 @router.patch("/{target_user_id}/change-password", response_model=schemas.user.PublicUser,
-              dependencies=[Depends(is_super_user_or_is_admin)])
+              dependencies=[Depends(is_super_user_or_is_admin)], include_in_schema=False)
 async def update_user_password_by_admin(target_user_id: UUID,
                                         passwords: schemas.user.ChangePasswordUser,
                                         db: Session = Depends(get_db)):
@@ -125,7 +110,7 @@ async def update_user_password_by_admin(target_user_id: UUID,
     return await UserLogic.change_password(db, user.id, passwords.password)
 
 
-@router.delete("/{target_user_id}", dependencies=[Depends(is_super_user)])
+@router.delete("/{target_user_id}", dependencies=[Depends(is_super_user)], include_in_schema=False)
 async def delete_user(target_user_id: UUID, db: Session = Depends(get_db)):
     user: schemas.user.User = await UserLogic.get_by_id(db, target_user_id)
     if user.isSuperUser:

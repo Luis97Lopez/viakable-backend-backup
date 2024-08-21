@@ -65,7 +65,7 @@ class RoleByUser(Base):
     id_user: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
     role: Mapped[Role] = relationship(back_populates='users_role')
-    user: Mapped[User] = relationship(back_populates='roles_user')
+    user: Mapped[User] = relationship(lazy="joined", back_populates='roles_user')
 
     operator: Mapped['Operator'] = relationship(lazy='noload', back_populates="role_user")
     forklift: Mapped['Forklift'] = relationship(lazy='noload', back_populates="role_user")
@@ -98,7 +98,7 @@ class Admin(Base):
     firstName: Mapped[str] = mapped_column(String())
     lastName: Mapped[str] = mapped_column(String())
 
-    role_user: Mapped[RoleByUser] = relationship(lazy='noload', back_populates="admin")
+    role_user: Mapped[RoleByUser] = relationship(lazy='joined', back_populates="admin")
 
 
 # class Material(Base):

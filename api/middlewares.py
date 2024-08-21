@@ -1,4 +1,7 @@
-from fastapi import Request, HTTPException, status
+import traceback
+
+from fastapi import Request, status
+from fastapi.responses import JSONResponse
 from utils.logs import get_logger
 
 
@@ -10,6 +13,6 @@ async def error_handling_middleware(request: Request, call_next):
         response = await call_next(request)
         return response
     except Exception as e:
-        logger.error(f"Server error {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Server Error, please try again later.")
+        logger.error(f"Server error {e} {traceback.format_exception(e)}")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            content={"message": "Server Error, please try again later."})

@@ -1,10 +1,9 @@
 import logging
 
 from schemas.user import FirstSuperUserCreate
-from logic.user import UserLogic
+from logic import UserLogic, RoleLogic, AdminLogic
 from utils.config import get_settings
 from sqlalchemy.orm import Session
-from db.models import Role
 from utils.enums import UserRoles
 
 logger = logging.getLogger(__name__)
@@ -22,7 +21,10 @@ async def create_first_super_user(db: Session) -> bool:
         super_user = FirstSuperUserCreate(**data)
         user = await UserLogic.get_super_user(db)
         if not user:
-            await UserLogic.create(db, data_in=super_user)
+            user = await UserLogic.create(db, data_in=super_user)
+        admin = await AdminLogic.get_by_id(db, user.id)
+        if not admin:
+            await AdminLogic.create(db, data_in={"user_id": user.id, "firstName": "Super", "lastName": "Admin"})
     except Exception as e:
         logger.error(f"Something wrong creating first super user {e}")
         return False
@@ -32,10 +34,9 @@ async def create_first_super_user(db: Session) -> bool:
 async def create_base_roles(db: Session) -> bool:
     try:
         for role in UserRoles:
-            row = db.query(Role).filter(Role.id == role).first()
+            row = await RoleLogic.get_by_id(db, role)
             if not row:
-                db.add(Role(id=role))
-                db.commit()
+                await RoleLogic.create(db, {"id": role})
     except Exception as e:
         logger.error(f"Something wrong creating first super user {e}")
         return False
@@ -50,4 +51,4 @@ async def init_db() -> bool:
         logger.error(f"Could not connect DB {e}")
         return False
 
-    return await create_first_super_user(db) and await create_base_roles(db)
+    return await create_base_roles(db) and await create_first_super_user(db)
