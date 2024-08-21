@@ -45,7 +45,7 @@ async def read_my_orders(order_filter: schemas.order.OrderFilter = FilterDepends
     absolute_skip = (max(page, 1) - 1) * size + skip
     return Paginated[list[schemas.order.Order]](
         data=await OrderLogic.filter_by_query_partial(db, query=order_filter,
-                                                              skip=absolute_skip, limit=size),
+                                                      skip=absolute_skip, limit=size),
         total=total,
         page=page,
         size=size
@@ -57,7 +57,7 @@ async def read_my_individual_order(target_order_id: int,
                                    db: Session = Depends(get_db),
                                    current_user: User = Depends(get_active_current_user)):
     db_order = await OrderLogic.get_by_id(db, row_id=target_order_id)
-    if not db_order:
+    if not db_order or db_order.id_operator is not current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order does not exist")
     return db_order
 

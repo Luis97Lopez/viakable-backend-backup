@@ -54,8 +54,6 @@ app.include_router(routes.admins.router)
 app.include_router(routes.forklifts.router)
 app.include_router(routes.materials.router)
 app.include_router(routes.orders.router)
-# app.include_router(routes.purchases.router)
-# app.include_router(routes.class_registers.router)
 
 
 @app.get('/')
