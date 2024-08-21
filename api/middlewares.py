@@ -13,6 +13,6 @@ async def error_handling_middleware(request: Request, call_next):
         response = await call_next(request)
         return response
     except Exception as e:
-        logger.error(f"Server error {e} {traceback.format_exception(e)}")
+        logger.error(f"Server error {e}")
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             content={"message": "Server Error, please try again later."})

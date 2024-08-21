@@ -57,6 +57,6 @@ async def create_admin(data_in: schemas.admin.AdminCreate, db: Session = Depends
 
 @router.patch("/{target_user_id}", response_model=schemas.admin.PublicAdmin, dependencies=[Depends(is_super_user)])
 async def update_admin(target_user_id: int, data_in: schemas.admin.AdminPartialIn, db: Session = Depends(get_db)):
-    await update_user(target_user_id, data_in, db)
-    admin = await AdminLogic.update(db, target_user_id, data_in.model_dump())
+    await update_user(target_user_id, schemas.user.ModifyUserByAdmin(**data_in.model_dump(exclude_none=True)), db)
+    admin = await AdminLogic.update_by_user_id(db, target_user_id, data_in.model_dump(exclude_none=True))
     return admin

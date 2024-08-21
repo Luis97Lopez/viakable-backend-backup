@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from fastapi_filter.contrib.sqlalchemy import Filter
 from db import models as db_models
+from typing import Any
 
 
 class UserBase(BaseModel):
@@ -34,6 +35,7 @@ class PublicUser(UserBase):
     id: int
     isSuperUser: bool
     isActive: bool
+    role: Any = ""
 
 
 class User(PublicUser):

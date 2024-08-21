@@ -1,5 +1,4 @@
-from pydantic import BaseModel, ConfigDict
-from .user import User
+from pydantic import BaseModel
 
 
 class Role(BaseModel):

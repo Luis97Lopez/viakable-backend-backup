@@ -71,6 +71,8 @@ class CRUD:
             return
 
         entry_data = data_changes
+        if not len(entry_data):
+            return await self.get_by_id(db, row_id)
 
         db.query(self.db_model) \
             .filter(self.db_model.id == row_id) \
