@@ -1,17 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi_filter import FilterDepends
 
-from logic import UserLogic, AdminLogic
+from logic import AdminLogic
 from db.dependencies import get_db
 from sqlalchemy.orm import Session
-from uuid import UUID
 from api.dependencies import is_super_user
 from utils.logs import get_logger
 import schemas
 from utils.config import get_settings
 from schemas.paginated import Paginated
-from utils.enums import UserRoles
-from api.routes.users import read_user, create_user, update_user
+from api.routes.users import create_user, update_user, delete_user
 
 
 settings = get_settings()
@@ -20,7 +18,7 @@ logger = get_logger(__name__)
 
 router = APIRouter(
     prefix='/admins',
-    tags=['admins']
+    tags=['crud_admin', 'platform']
 )
 
 
@@ -60,3 +58,8 @@ async def update_admin(target_user_id: int, data_in: schemas.admin.AdminPartialI
     await update_user(target_user_id, schemas.user.ModifyUserByAdmin(**data_in.model_dump(exclude_none=True)), db)
     admin = await AdminLogic.update_by_user_id(db, target_user_id, data_in.model_dump(exclude_none=True))
     return admin
+
+
+@router.delete("/{target_user_id}", dependencies=[Depends(is_super_user)])
+async def remove_admin(target_user_id: int, db: Session = Depends(get_db)):
+    await delete_user(target_user_id, db)

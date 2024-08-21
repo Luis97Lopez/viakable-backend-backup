@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from api.dependencies import get_active_current_user
+import schemas
 from schemas.user import User
 from schemas.token import TokenWithUser, RefreshTokenData
 
@@ -82,3 +84,31 @@ async def refresh(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="The provided refresh token is not valid or has expired.")
     return get_token_payload(user)
+
+
+# ------------------------
+# ME endpoints
+# ------------------------
+
+
+@router.get("/me", response_model=schemas.user.PublicUser)
+async def read_user_me(current_user: schemas.user.User = Depends(get_active_current_user)):
+    return current_user
+
+
+@router.patch("/me", response_model=schemas.user.PublicUser)
+async def update_user_me(partial_user: schemas.user.UserPartialIn,
+                         current_user: schemas.user.User = Depends(get_active_current_user),
+                         db: Session = Depends(get_db)):
+    return await UserLogic.update(db, current_user.id, partial_user)
+
+
+@router.patch("/me/change-password", response_model=schemas.user.PublicUser)
+async def update_password_me(passwords: schemas.user.ChangePasswordUser,
+                             current_user: schemas.user.User = Depends(get_active_current_user),
+                             db: Session = Depends(get_db)):
+    user = await UserLogic.get_by_id(db, current_user.id)
+    user_password = await UserLogic.get_user_password(db, current_user.id)
+    if not verify_password(passwords.oldPassword, user_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect password")
+    return await UserLogic.change_password(db, user.id, passwords.password)

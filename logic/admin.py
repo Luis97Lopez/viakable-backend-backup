@@ -30,6 +30,12 @@ class AdminCRUD(CRUD):
         admin_data = self.get_just_admin_data(data_changes)
         return await super().update(db, admin.id, admin_data)
 
+    async def delete_by_user_id(self, db: Session, user_id: int):
+        admin = await self.get_by_user_id(db, user_id)
+        if not admin:
+            return True
+        return await super().delete(db, admin.id)
+
     async def get_by_user_id(self, db: Session, user_id: int):
         user_by_role = db.query(models.RoleByUser).filter(and_(models.RoleByUser.id_user == user_id,
                                                                models.RoleByUser.id_role == UserRoles.ADMIN)).first()

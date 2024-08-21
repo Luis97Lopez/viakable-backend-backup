@@ -1,14 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi_filter import FilterDepends
-
 
 from logic.user import UserLogic
-from api.dependencies import get_active_current_user, is_super_user, is_super_user_or_is_admin
-from utils.hash_helper import verify_password
+from api.dependencies import is_super_user, is_super_user_or_is_admin
 from utils.logs import get_logger
 import schemas
 from utils.config import get_settings
-from schemas.paginated import Paginated
 
 from db.dependencies import get_db
 from sqlalchemy.orm import Session
@@ -24,33 +20,6 @@ router = APIRouter(
     prefix='/users',
     tags=['users'],
 )
-
-# ------------------------
-# ME endpoints
-# ------------------------
-
-
-@router.get("/me", response_model=schemas.user.PublicUser)
-async def read_user_me(current_user: schemas.user.User = Depends(get_active_current_user)):
-    return current_user
-
-
-@router.patch("/me", response_model=schemas.user.PublicUser)
-async def update_user_me(partial_user: schemas.user.UserPartialIn,
-                         current_user: schemas.user.User = Depends(get_active_current_user),
-                         db: Session = Depends(get_db)):
-    return await UserLogic.update(db, current_user.id, partial_user)
-
-
-@router.patch("/me/change-password", response_model=schemas.user.PublicUser)
-async def update_password_me(passwords: schemas.user.ChangePasswordUser,
-                             current_user: schemas.user.User = Depends(get_active_current_user),
-                             db: Session = Depends(get_db)):
-    user = await UserLogic.get_by_id(db, current_user.id)
-    user_password = await UserLogic.get_user_password(db, current_user.id)
-    if not verify_password(passwords.oldPassword, user_password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect password")
-    return await UserLogic.change_password(db, user.id, passwords.password)
 
 
 # ------------------------
@@ -111,8 +80,10 @@ async def update_user_password_by_admin(target_user_id: UUID,
 
 
 @router.delete("/{target_user_id}", dependencies=[Depends(is_super_user)], include_in_schema=False)
-async def delete_user(target_user_id: UUID, db: Session = Depends(get_db)):
+async def delete_user(target_user_id: int, db: Session = Depends(get_db)):
     user: schemas.user.User = await UserLogic.get_by_id(db, target_user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     if user.isSuperUser:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Can't remove this user")
 

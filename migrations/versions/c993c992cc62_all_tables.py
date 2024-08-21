@@ -1,8 +1,8 @@
-"""new tables
+"""all tables
 
-Revision ID: 83e3c25a9b4c
+Revision ID: c993c992cc62
 Revises: 
-Create Date: 2024-08-20 21:08:00.632424
+Create Date: 2024-08-21 13:24:42.345978
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '83e3c25a9b4c'
+revision: str = 'c993c992cc62'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -40,27 +40,27 @@ def upgrade() -> None:
     sa.Column('id_role', sa.String(), nullable=False),
     sa.Column('id_user', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['id_role'], ['roles.id'], ),
-    sa.ForeignKeyConstraint(['id_user'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['id_user'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('admins',
     sa.Column('id', sa.Integer(), autoincrement=False, nullable=False),
     sa.Column('firstName', sa.String(), nullable=False),
     sa.Column('lastName', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['id'], ['role_by_user.id'], ),
+    sa.ForeignKeyConstraint(['id'], ['role_by_user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('forklifts',
     sa.Column('id', sa.Integer(), autoincrement=False, nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['id'], ['role_by_user.id'], ),
+    sa.ForeignKeyConstraint(['id'], ['role_by_user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('operators',
     sa.Column('id', sa.Integer(), autoincrement=False, nullable=False),
     sa.Column('machine', sa.String(), nullable=False),
     sa.Column('area', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['id'], ['role_by_user.id'], ),
+    sa.ForeignKeyConstraint(['id'], ['role_by_user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
