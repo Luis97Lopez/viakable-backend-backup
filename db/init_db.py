@@ -22,7 +22,7 @@ async def create_first_super_user(db: Session) -> bool:
         user = await UserLogic.get_super_user(db)
         if not user:
             user = await UserLogic.create(db, data_in=super_user)
-        admin = await AdminLogic.get_by_id(db, user.id)
+        admin = await AdminLogic.get_by_user_id(db, user.id)
         if not admin:
             await AdminLogic.create(db, data_in={"user_id": user.id, "firstName": "Super", "lastName": "Admin"})
     except Exception as e:
