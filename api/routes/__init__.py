@@ -1,1 +1,1 @@
-from . import auth, admins, users, operators
+from . import auth, admins, users, operators, forklifts
