@@ -21,6 +21,10 @@ router = APIRouter(
     tags=['crud_admin', 'platform']
 )
 
+# ------------------------
+# CRUD endpoints
+# ------------------------
+
 
 @router.get("", response_model=Paginated[list[schemas.admin.PublicAdmin]],
             dependencies=[Depends(is_super_user)])
