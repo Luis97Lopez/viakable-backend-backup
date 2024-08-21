@@ -23,10 +23,6 @@ logger = get_logger(__name__)
 settings = get_settings()
 
 
-server_error_exception = HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                       detail="Server Error, please try again later.")
-
-
 def get_token_payload(user):
     user_id = str(user.id)
     access_token, access_expires_at = encode_access_token(user_id)

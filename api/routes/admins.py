@@ -22,9 +22,6 @@ router = APIRouter(
     tags=['admins']
 )
 
-server_error_exception = HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                       detail="Server Error, please try again later.")
-
 
 @router.get("", response_model=Paginated[list[schemas.user.PublicUser]],
             dependencies=[Depends(is_super_user)])
@@ -54,17 +51,13 @@ async def read_admin(target_user_id: UUID, db: Session = Depends(get_db)):
 async def activate_admin(data_in: schemas.roles.ActivateOrDeactivateRole,
                          db: Session = Depends(get_db)):
     target_user_id = data_in.userId
-    try:
-        partial_user = {
-            "role": UserRoles.ADMIN
-        }
-        user = await UserLogic.update(db=db, row_id=target_user_id, data_changes=partial_user)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        return user
-    except Exception as e:
-        logger.error(f"Server error {e}")
-        raise server_error_exception
+    partial_user = {
+        "role": UserRoles.ADMIN
+    }
+    user = await UserLogic.update(db=db, row_id=target_user_id, data_changes=partial_user)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
 
 
 @router.delete("/{target_user_id}", response_model=schemas.user.PublicUser,
@@ -77,12 +70,7 @@ async def deactivate_admin(target_user_id: UUID, db: Session = Depends(get_db)):
     if user.isSuperUser:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Can't deactivate this admin")
 
-    try:
-        user = await UserLogic.update(db=db, row_id=target_user_id, data_changes=partial_user)
-    except Exception as e:
-        logger.error(f"Server error {e}")
-        raise server_error_exception
-    else:
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        return user
+    user = await UserLogic.update(db=db, row_id=target_user_id, data_changes=partial_user)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user

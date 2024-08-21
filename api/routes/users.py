@@ -25,9 +25,6 @@ router = APIRouter(
     tags=['users'],
 )
 
-server_error_exception = HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                       detail="Server Error, please try again later.")
-
 # ------------------------
 # ME endpoints
 # ------------------------
@@ -42,11 +39,7 @@ async def read_user_me(current_user: schemas.user.User = Depends(get_active_curr
 async def update_user_me(partial_user: schemas.user.UserPartialIn,
                          current_user: schemas.user.User = Depends(get_active_current_user),
                          db: Session = Depends(get_db)):
-    try:
-        return await UserLogic.update(db, current_user.id, partial_user)
-    except Exception as e:
-        logger.error(f"Server error {e}")
-        raise server_error_exception
+    return await UserLogic.update(db, current_user.id, partial_user)
 
 
 @router.patch("/me/change-password", response_model=schemas.user.PublicUser)
@@ -57,11 +50,7 @@ async def update_password_me(passwords: schemas.user.ChangePasswordUser,
     user_password = await UserLogic.get_user_password(db, current_user.id)
     if not verify_password(passwords.oldPassword, user_password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect password")
-    try:
-        return await UserLogic.change_password(db, user.id, passwords.password)
-    except Exception as e:
-        logger.error(f"Server error {e}")
-        raise server_error_exception
+    return await UserLogic.change_password(db, user.id, passwords.password)
 
 
 # ------------------------
@@ -105,12 +94,9 @@ async def create_user(user_data: schemas.user.UserCreate,
     except IntegrityError:
         logger.debug("User already exists")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User already exist")
-    except Exception as e:
-        logger.error(f"Server error {e.args} {e}")
-        raise server_error_exception
 
 
-@router.patch("/{target_user_id}",response_model=schemas.user.PublicUser,
+@router.patch("/{target_user_id}", response_model=schemas.user.PublicUser,
               dependencies=[Depends(is_super_user_or_is_admin)])
 async def update_user(target_user_id: UUID, partial_user: schemas.user.ModifyUserByAdmin,
                       db: Session = Depends(get_db)):
@@ -126,25 +112,17 @@ async def update_user(target_user_id: UUID, partial_user: schemas.user.ModifyUse
     except DBAPIError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Error: Username already registered.")
-    except Exception as e:
-        logger.error(f"Server error {e}")
-        raise server_error_exception
 
 
 @router.patch("/{target_user_id}/change-password", response_model=schemas.user.PublicUser,
               dependencies=[Depends(is_super_user_or_is_admin)])
-async def update_user_password_admin(target_user_id: UUID,
-                                     passwords: schemas.user.ChangePasswordUser,
-                                     db: Session = Depends(get_db)):
+async def update_user_password_by_admin(target_user_id: UUID,
+                                        passwords: schemas.user.ChangePasswordUser,
+                                        db: Session = Depends(get_db)):
     user = await UserLogic.get_by_id(db, target_user_id)
     if user.isSuperUser:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Can't edit this user")
-
-    try:
-        return await UserLogic.change_password(db, user.id, passwords.password)
-    except Exception as e:
-        logger.error(f"Server error {e}")
-        raise server_error_exception
+    return await UserLogic.change_password(db, user.id, passwords.password)
 
 
 @router.delete("/{target_user_id}", dependencies=[Depends(is_super_user)])
@@ -158,6 +136,3 @@ async def delete_user(target_user_id: UUID, db: Session = Depends(get_db)):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     except DBAPIError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Can't delete User, related to other data")
-    except Exception as e:
-        logger.error(f"Server error {e}")
-        raise server_error_exception

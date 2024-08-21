@@ -9,7 +9,7 @@ from db.init_db import init_db
 from contextlib import asynccontextmanager
 import asyncio
 
-from api import routes
+from api import routes, middlewares
 
 # Logs service
 initialize_logs_service()
@@ -33,6 +33,7 @@ async def lifespan(app_: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.middleware("http")(middlewares.error_handling_middleware)
 
 # CORS config
 if settings.cors.allow:
