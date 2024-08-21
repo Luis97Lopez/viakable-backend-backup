@@ -83,7 +83,7 @@ async def create_user(user_data: schemas.user.UserCreate,
 
 @router.patch("/{target_user_id}", response_model=schemas.user.PublicUser,
               dependencies=[Depends(is_super_user_or_is_admin)], include_in_schema=False)
-async def update_user(target_user_id: UUID, partial_user: schemas.user.ModifyUserByAdmin,
+async def update_user(target_user_id: int, partial_user: schemas.user.ModifyUserByAdmin,
                       db: Session = Depends(get_db)):
     user = await UserLogic.get_by_id(db, target_user_id)
     if user.isSuperUser:

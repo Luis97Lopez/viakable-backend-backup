@@ -20,6 +20,10 @@ class AdminCRUD(CRUD):
 
         return await super().create(db, {"id": row.id, **admin_data})
 
+    async def update_by_user_id(self, db: Session, user_id: int, data_changes: dict):
+        admin = await self.get_by_user_id(db, user_id)
+        return await super().update(db, admin.id, data_changes)
+
     async def get_by_user_id(self, db: Session, user_id: int):
         user_by_role = db.query(models.RoleByUser).filter(and_(models.RoleByUser.id_user == user_id,
                                                                models.RoleByUser.id_role == UserRoles.ADMIN)).first()

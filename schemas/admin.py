@@ -13,7 +13,7 @@ class AdminCreate(user.UserCreate, AdminBase):
     pass
 
 
-class AdminPartialIn(user.UserPartialIn):
+class AdminPartialIn(user.ModifyUserByAdmin):
     firstName: str | None = None
     lastName: str | None = None
 

@@ -11,7 +11,7 @@ import schemas
 from utils.config import get_settings
 from schemas.paginated import Paginated
 from utils.enums import UserRoles
-from api.routes.users import read_user, create_user
+from api.routes.users import read_user, create_user, update_user
 
 
 settings = get_settings()
@@ -52,4 +52,11 @@ async def create_admin(data_in: schemas.admin.AdminCreate, db: Session = Depends
     user = await create_user(data_in, db)
     target_admin_id = user.id
     admin = await AdminLogic.create(db, {**data_in.model_dump(), "user_id": target_admin_id})
+    return admin
+
+
+@router.patch("/{target_user_id}", response_model=schemas.admin.PublicAdmin, dependencies=[Depends(is_super_user)])
+async def update_admin(target_user_id: int, data_in: schemas.admin.AdminPartialIn, db: Session = Depends(get_db)):
+    await update_user(target_user_id, data_in, db)
+    admin = await AdminLogic.update(db, target_user_id, data_in.model_dump())
     return admin
