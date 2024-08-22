@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ConfigDict, Field
-from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, AwareDatetime
+from datetime import datetime, timezone
 from fastapi_filter.contrib.sqlalchemy import Filter
 from db import models as db_models
 from utils.enums import OrderStates
@@ -13,9 +13,9 @@ from .material import PublicMaterial
 
 class OrderBase(BaseModel):
     id_forklift: int
-    estimate_datetime: datetime
+    estimate_datetime: AwareDatetime
     id_operator: int | None = None
-    creation_datetime: datetime = Field(default=datetime.now())
+    creation_datetime: AwareDatetime = Field(default=datetime.now(tz=timezone.utc))
     order_datetime: datetime | None = None
     state: OrderStates = OrderStates.PENDING
 
