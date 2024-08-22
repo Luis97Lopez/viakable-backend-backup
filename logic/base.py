@@ -42,6 +42,22 @@ class CRUD:
                 data: list = db.query(self.db_model).offset(skip).limit(limit).all()
         return [await self.parse(d) for d in data]
 
+    async def count_rows_by_query_partial(self, db: Session, query: Any):
+        if not isinstance(query, self.filter_model):
+            count: int = db.query(self.db_model).count()
+        else:
+            try:
+                row_filter = db.query(self.db_model)
+                for j in self.join:
+                    row_filter = row_filter.join(j)
+                row_filter = query.filter(row_filter)
+                row_filter = query.sort(row_filter)
+                count = row_filter.count()
+            except (DataError, InternalError) as error:
+                db.rollback()
+                count: int = db.query(self.db_model).count()
+        return count
+
     async def filter_by_attributes(self, db: Session, attributes: Mapping[str, Any], skip: int = 0, limit: int = 100):
         q = db.query(self.db_model)
         for attr, value in attributes.items():

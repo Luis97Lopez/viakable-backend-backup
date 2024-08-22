@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.exc import IntegrityError
-from datetime import datetime, timedelta
 from fastapi_filter import FilterDepends
 
 from logic.order import OrderLogic
@@ -10,8 +9,9 @@ from sqlalchemy.orm import Session
 from utils.logs import get_logger
 from utils.config import get_settings
 from utils import enums
+from utils.roles_helper import has_role
 
-from api.dependencies import is_super_user_or_is_admin, get_active_current_user, is_operator_user
+from api.dependencies import get_active_current_user, is_operator_user
 
 import schemas
 from schemas.paginated import Paginated
@@ -36,11 +36,16 @@ async def validate_can_cancel_order(db: Session):
 
 
 @router.get("", response_model=Paginated[list[schemas.order.PublicOrder]])
-async def read_my_orders(order_filter: schemas.order.OrderFilter = FilterDepends(schemas.order.OrderFilter),
-                         page: int = 1, skip: int = 0, size: int = 100,
-                         db: Session = Depends(get_db),
-                         current_user: User = Depends(get_active_current_user)):
-    total = await OrderLogic.get_rows_count(db)
+async def read_orders(order_filter: schemas.order.OrderFilter = FilterDepends(schemas.order.OrderFilter),
+                      page: int = 1, skip: int = 0, size: int = 100,
+                      db: Session = Depends(get_db),
+                      current_user: User = Depends(get_active_current_user)):
+    if has_role(enums.UserRoles.OPERATOR, current_user.roles):
+        order_filter.id_operator = current_user.id
+    elif has_role(enums.UserRoles.FORKLIFT, current_user.roles):
+        order_filter.id_forklift = current_user.id
+
+    total = await OrderLogic.count_rows_by_query_partial(db, query=order_filter)
     size = min(size, settings.app.maximum_page_size)
     absolute_skip = (max(page, 1) - 1) * size + skip
     return Paginated[list[schemas.order.Order]](

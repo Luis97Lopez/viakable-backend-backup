@@ -53,12 +53,18 @@ class OrderFilter(Filter):
     # canceled
     canceled: bool | None = None
 
+    # id_forklift
+    id_forklift: int | None = None
+
+    # id_operator
+    id_operator: int | None = None
+
     # creation_datetime
-    creation_datetime: datetime | None = None
-    creation_datetime__gt: datetime | None = None
-    creation_datetime__gte: datetime | None = None
-    creation_datetime__lte: datetime | None = None
-    creation_datetime__lt: datetime | None = None
+    creation_datetime: AwareDatetime | None = None
+    creation_datetime__gt: AwareDatetime | None = None
+    creation_datetime__gte: AwareDatetime | None = None
+    creation_datetime__lte: AwareDatetime | None = None
+    creation_datetime__lt: AwareDatetime | None = None
 
     # user: UserFilter | None = FilterDepends(with_prefix("user", UserFilter))
 
