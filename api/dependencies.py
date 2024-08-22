@@ -7,7 +7,7 @@ from utils.jwt_helper import decode_access_token
 from db.dependencies import get_db
 from sqlalchemy.orm import Session
 from utils.logs import get_logger
-from utils.roles_helper import has_role
+from utils.enums import has_role
 
 
 # tokenUrl refers to a relative URL
@@ -53,9 +53,8 @@ async def is_super_user(current_active_user: User = Depends(get_active_current_u
     return True
 
 
-async def is_teacher_user(current_active_user: User = Depends(get_active_current_user)):
-    # TODO: roles
-    if not (True or current_active_user.role == UserRoles.TEACHER):
+async def is_forklift_user(current_active_user: User = Depends(get_active_current_user)):
+    if not has_role(UserRoles.FORKLIFT, current_active_user.roles):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized User")
     return True
 

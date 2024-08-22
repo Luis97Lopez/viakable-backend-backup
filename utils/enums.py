@@ -1,3 +1,4 @@
+from typing import Any
 from enum import Enum
 
 
@@ -10,5 +11,13 @@ class UserRoles(str, Enum):
 class OrderStates(str, Enum):
     PENDING = "pendiente"
     DELIVERED = "entregado"
+    CONFIRMED = "confirmado"
     CANCELED_BY_OPERATOR = "cancelado_por_operador"
-    NO_MATERIAL = "no_hay_material"
+    CANCELED_NO_MATERIAL = "no_hay_material"
+
+
+def has_role(role: str, roles: list[Any]):
+    for r in roles:
+        if role == getattr(r, "id", "unknown"):
+            return True
+    return False
