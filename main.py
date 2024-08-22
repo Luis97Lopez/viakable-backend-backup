@@ -62,7 +62,7 @@ def custom_openapi():
         return app.openapi_schema
     openapi_schema = get_openapi(
         title="Viakable Backend",
-        version="0.1.0",
+        version="0.1.1",
         routes=app.routes,
     )
     app.openapi_schema = openapi_schema

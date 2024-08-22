@@ -27,7 +27,7 @@ router = APIRouter(
 )
 
 
-async def validate_order(db: Session, id_forklift: int, id_materials: list[int]):
+async def validate_order(db: Session, id_forklift: int, materials_order: list):
     return True
 
 
@@ -67,7 +67,7 @@ async def read_my_individual_order(target_order_id: int,
 async def create_order(order_data: schemas.order.OrderCreate,
                        db: Session = Depends(get_db),
                        current_user: schemas.user.User = Depends(get_active_current_user)):
-    await validate_order(db, order_data.id_forklift, order_data.id_materials)
+    await validate_order(db, order_data.id_forklift, order_data.materials_order)
     order_data.id_operator = current_user.id
     try:
         return await OrderLogic.create(db, data_in=order_data.model_dump())

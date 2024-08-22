@@ -7,11 +7,12 @@ from schemas.order import Order, OrderFilter
 
 class OrderCRUD(CRUD):
     async def create(self, db: Session, data_in: dict):
-        id_materials = data_in.pop("id_materials")
+        materials_order = data_in.pop("materials_order")
         order = await super().create(db, data_in)
 
-        for id_material in id_materials:
-            row = models.MaterialByOrder(id_order=order.id, id_material=id_material)
+        for material_order in materials_order:
+            row = models.MaterialByOrder(id_order=order.id, id_material=material_order.get("id_material"),
+                                         quantity=material_order.get("quantity"))
             db.add(row)
             db.commit()
 

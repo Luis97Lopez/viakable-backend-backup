@@ -20,8 +20,16 @@ class OrderBase(BaseModel):
     state: OrderStates = OrderStates.PENDING
 
 
+class OrderByMaterial(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id_material: int
+    quantity: int
+    material: PublicMaterial | None = None
+
+
 class OrderCreate(OrderBase):
-    id_materials: list[int]
+    materials_order: list[OrderByMaterial]
 
 
 class PublicOrder(OrderBase):
@@ -31,7 +39,7 @@ class PublicOrder(OrderBase):
     canceled: bool = False
     operator: PublicUser | None = None
     forklift: PublicUser | None = None
-    materials: list[PublicMaterial] | None = None
+    materials_order: list[OrderByMaterial] | None = None
 
 
 class Order(PublicOrder):
