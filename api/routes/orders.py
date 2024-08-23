@@ -70,7 +70,7 @@ async def read_individual_order(target_order_id: int,
     if enums.has_role(enums.UserRoles.OPERATOR, current_user.roles) and db_order.id_operator is not current_user.id:
         raise order_not_exist_exception
 
-    if enums.has_role(enums.UserRoles.FORKLIFT, current_user.roles):
+    if enums.has_role(enums.UserRoles.FORKLIFT, current_user.roles) and db_order.id_forklift is not current_user.id:
         raise order_not_exist_exception
 
     return db_order
@@ -165,7 +165,7 @@ async def notify_order_delivered(target_order_id: int, db: Session = Depends(get
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is canceled can't notify")
 
     try:
-        return await OrderLogic.update(db, target_order_id, {"state": enums.OrderStates.CANCELED_NO_MATERIAL})
+        return await OrderLogic.update(db, target_order_id, {"state": enums.OrderStates.DELIVERED})
     except IntegrityError:
         logger.debug("Order already exists")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong foreign keys")
