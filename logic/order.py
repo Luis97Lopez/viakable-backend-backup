@@ -8,7 +8,9 @@ from schemas.order import Order, OrderFilter
 
 
 def to_utc(dt: datetime) -> datetime:
-    return dt.astimezone(timezone.utc)
+    if not dt.tzinfo:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
 
 
 class OrderCRUD(CRUD):

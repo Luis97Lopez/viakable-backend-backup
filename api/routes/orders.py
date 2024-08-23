@@ -102,10 +102,10 @@ async def confirm_order(target_order_id: int, db: Session = Depends(get_db),
     order = await read_individual_order(target_order_id, db, current_user)
 
     if order.state in [enums.OrderStates.CONFIRMED]:
-        return HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Already confirmed and delivered")
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Already confirmed and delivered")
 
     if order.state in [enums.OrderStates.CANCELED_BY_OPERATOR, enums.OrderStates.CANCELED_NO_MATERIAL]:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is canceled can't confirm")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is canceled can't confirm")
 
     try:
         return await OrderLogic.update(db, target_order_id, {"state": enums.OrderStates.CONFIRMED})
@@ -121,10 +121,10 @@ async def cancel_order_by_operator(target_order_id: int, db: Session = Depends(g
     order = await read_individual_order(target_order_id, db, current_user)
 
     if order.state in [enums.OrderStates.CANCELED_BY_OPERATOR, enums.OrderStates.CANCELED_NO_MATERIAL]:
-        return HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Already canceled")
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Already canceled")
 
     if order.state == enums.OrderStates.DELIVERED:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is delivered can't cancel")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is delivered can't cancel")
 
     try:
         return await OrderLogic.update(db, target_order_id, {"state": enums.OrderStates.CANCELED_BY_OPERATOR})
@@ -140,10 +140,10 @@ async def cancel_order_by_forklift(target_order_id: int, db: Session = Depends(g
     order = await read_individual_order(target_order_id, db, current_user)
 
     if order.state in [enums.OrderStates.CANCELED_BY_OPERATOR, enums.OrderStates.CANCELED_NO_MATERIAL]:
-        return HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Already canceled")
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Already canceled")
 
     if order.state == enums.OrderStates.DELIVERED:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is delivered can't cancel")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is delivered can't cancel")
 
     try:
         return await OrderLogic.update(db, target_order_id, {"state": enums.OrderStates.CANCELED_NO_MATERIAL})
@@ -152,17 +152,17 @@ async def cancel_order_by_forklift(target_order_id: int, db: Session = Depends(g
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong foreign keys")
 
 
-@router.post("/{target_order_id}/cancel-by-forklift", response_model=schemas.order.PublicOrder,
+@router.post("/{target_order_id}/deliver", response_model=schemas.order.PublicOrder,
              dependencies=[Depends(is_forklift_user)])
 async def notify_order_delivered(target_order_id: int, db: Session = Depends(get_db),
                                  current_user: schemas.user.User = Depends(get_active_current_user)):
     order = await read_individual_order(target_order_id, db, current_user)
 
     if order.state in [enums.OrderStates.CONFIRMED, enums.OrderStates.DELIVERED]:
-        return HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Already confirmed and delivered")
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Already confirmed and delivered")
 
     if order.state in [enums.OrderStates.CANCELED_BY_OPERATOR, enums.OrderStates.CANCELED_NO_MATERIAL]:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is canceled can't notify")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order is canceled can't notify")
 
     try:
         return await OrderLogic.update(db, target_order_id, {"state": enums.OrderStates.CANCELED_NO_MATERIAL})
