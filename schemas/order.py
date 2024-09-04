@@ -11,11 +11,15 @@ from .user import PublicUser
 from .material import PublicMaterial
 
 
+def get_moment_datetime():
+    return datetime.now(tz=timezone.utc)
+
+
 class OrderBase(BaseModel):
     id_forklift: int
     estimate_datetime: AwareDatetime
     id_operator: int | None = None
-    creation_datetime: AwareDatetime = Field(default=datetime.now(tz=timezone.utc))
+    creation_datetime: AwareDatetime = Field(default_factory=get_moment_datetime)
     order_datetime: datetime | None = None
     state: OrderStates = OrderStates.PENDING
 
